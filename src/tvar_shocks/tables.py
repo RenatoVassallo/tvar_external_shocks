@@ -233,17 +233,25 @@ def table_calibration(cfg) -> None:
                                      placement="H", source="Cálculos de los autores"))
 
 
-def table_robustness(cfg) -> None:
+PAPER_VARIANTS = ["lenza_primiceri", "pre2020", "usa", "tot", "joint_block"]   # Table 3 of the paper
+
+
+def _robustness_table(cfg, variants, lp_thresholds, name: str, label: str, caption: str) -> None:
+    """Pass-through at 12 months by specification, with Pr(optimism > pessimism) where it is defined."""
     H = cfg["girf"]["pass_through"][0]
     est_thr = cfg["estimation"]["threshold"]
     base = _read_pt("pass_through.csv")
     rob = _read_pt("pass_through_robustness.csv")
-    rob = rob[rob["variant"].isin(TABLE4_VARIANTS)]
+    rob = rob[rob["variant"].isin(variants)]
+    rob["order"] = rob["variant"].map({v: i for i, v in enumerate(variants)})
+    rob = rob.sort_values("order", kind="stable").drop(columns="order")
     frames = [base[base["variant"].isin(["base", "base_linear_irf"])], rob]
     lp = pd.read_csv(results_dir() / "lp_pass_through.csv")
-    lp = lp[lp["sample"] == "completa_sin_covid"]
+    lp = lp[(lp["sample"] == "completa_sin_covid") & lp["threshold"].isin(lp_thresholds)]
     frames.append(lp.assign(variant=lp["threshold"].map(lambda t: f"lp_{t:g}")))
     pt = pd.concat(frames)
+    asym = pd.read_csv(results_dir() / "asymmetry.csv")
+    asym = asym[asym["horizonte"] == H].set_index(["model", "method"])
     descr = {"base": "Especificación base (GIRF)",
              "base_linear_irf": "IRF convencional por régimen",
              f"lp_{est_thr:g}": "Proyecciones locales",
@@ -253,26 +261,43 @@ def table_robustness(cfg) -> None:
     rows = ""
     for (variant, model), d in pt[pt["horizonte"] == H].groupby(["variant", "model"], sort=False):
         cells = [d[d["group"] == reg].iloc[0] for reg in ("pesimismo", "optimismo")]
+        if variant == "base":
+            prob = asym.loc[(model, "girf"), "prob_optimism_larger"]
+        elif variant == "base_linear_irf":
+            prob = asym.loc[(model, "linear_irf"), "prob_optimism_larger"]
+        elif variant.startswith("lp_"):
+            prob = None
+        else:
+            prob = _variant_asymmetry(cfg, variant, model, "g_gdp", H)
         rows += (f"{descr.get(variant, variant)} & {shock[model.split('_')[0]]} & "
-                 + " & ".join(_cell(c) for c in cells) + " \\\\\n")
-    header = (" & & \\multicolumn{2}{c}{Pesimismo} & \\multicolumn{2}{c}{Optimismo} \\\\\n"
+                 + " & ".join(_cell(c) for c in cells)
+                 + (" & " if prob is None else f" & {prob:.2f}") + " \\\\\n")
+    header = (" & & \\multicolumn{2}{c}{Pesimismo} & \\multicolumn{2}{c}{Optimismo} & \\\\\n"
               "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\n"
-              "Especificación & Choque & Mediana & Int. 68\\% & Mediana & Int. 68\\% \\\\\n")
-    note = ("Efecto traspaso al PBI a 12 meses. China e IPX: choques de +1 p.p. en la producción industrial de "
-            "China y de +10 p.p. en el índice de precios de exportación; EE.UU.: +1 p.p. en la producción "
-            "industrial de EE.UU.; TI: +10 p.p. en los términos de intercambio. Las proyecciones locales son el "
-            "multiplicador acumulado de Ramey y Zubairy (2018) estimado por mínimos cuadrados en dos etapas en "
-            f"cada estado, sin los meses de 2020-21, con bandas de $\\pm 1$ error estándar de Newey-West; el "
+              "Especificación & Choque & Mediana & Int. 68\\% & Mediana & Int. 68\\% & Pr \\\\\n")
+    note = ("Efecto traspaso al PBI a 12 meses, muestra 2002-2025 salvo donde se indica. China e IPX: choques de "
+            "+1 p.p. en la producción industrial de China y de +10 p.p. en el índice de precios de exportación; "
+            "EE.UU.: +1 p.p. en la producción industrial de EE.UU.; TI: +10 p.p. en los términos de intercambio. "
+            "Pr: probabilidad posterior de que el traspaso sea mayor en optimismo, calculada extracción por "
+            "extracción. Las proyecciones locales son el multiplicador acumulado de Ramey y Zubairy (2018) "
+            "estimado por mínimos cuadrados en dos etapas en cada estado, sin los meses de 2020-21, con bandas "
+            "de $\\pm 1$ error estándar de Newey-West, no comparables con los intervalos de credibilidad; el "
             f"estado es la confianza {cfg['lp']['delay']} meses antes del choque.")
-    _write("tab_robustness", _table(f"Efecto traspaso a {H} meses bajo especificaciones alternativas",
-                                    "tab:robustness", ">{\\raggedright\\arraybackslash}p{5.6cm}lcccc",
-                                    header, rows, note))
+    _write(name, _table(caption, label, ">{\\raggedright\\arraybackslash}p{5.2cm}lccccc", header, rows, note))
+
+
+def table_robustness(cfg) -> None:
+    est_thr = cfg["estimation"]["threshold"]
+    _robustness_table(cfg, PAPER_VARIANTS, [est_thr], "tab_robustness", "tab:robustness",
+                      "Efecto traspaso a 12 meses bajo especificaciones alternativas")
+    _robustness_table(cfg, TABLE4_VARIANTS + ["pre2020"], [est_thr, 45.0], "tab_robustness_full",
+                      "tab:robustness_full", "Efecto traspaso a 12 meses bajo todas las especificaciones alternativas")
 
 
 def table_fiscal(cfg) -> None:
     pt = pd.read_csv(results_dir() / "pass_through_robustness.csv")
     pt = pt[pt["variant"] == "fiscal"]
-    H = cfg["girf"]["pass_through"]
+    H = cfg["girf"]["pass_through"][:2]                 # 12 and 24 months: the 60-month horizon adds width, not information
     names = {"g_rev": "Ingresos", "g_gdp": "PBI"}
     labels = {"chn_fiscal": "Producción industrial de China, +1 p.p.",
               "ipx_fiscal": "Índice de precios de exportación, +10 p.p."}

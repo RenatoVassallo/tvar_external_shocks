@@ -238,34 +238,43 @@ def fig_pass_through_bands(cfg):
 
 
 def fig_threshold_grid(cfg):
+    """Pass-through by threshold (paper, ``fig_threshold_pt``) and, with the marginal likelihood
+    panel below it, the full version for the supplement (``fig_threshold_grid``)."""
     info = pd.read_csv(results_dir() / "threshold_grid_info.csv")
     pt = _gdp(pd.read_csv(results_dir() / "threshold_grid_pass_through.csv"))
     specs = model_specs(cfg)
     H = cfg["girf"]["pass_through"][0]
-    with plt.rc_context(STYLE):
-        fig, axes = plt.subplots(2, len(specs), figsize=(6.5, 5.0), sharex=True, squeeze=False)
-        for j, (name, spec) in enumerate(specs.items()):
-            ax = axes[0, j]
-            for k, reg in enumerate(("pesimismo", "optimismo")):
-                d = pt[(pt["model"] == name) & (pt["group"] == reg) & (pt["horizonte"] == H)].sort_values("grid_threshold")
-                x = d["grid_threshold"] + (k - 0.5) * 0.3
-                line, _, _, label = REGIME[reg]
-                ax.vlines(x, d["p16"], d["p84"], colors=line, lw=2)
-                ax.plot(x, d["p50"], "o" if reg == "optimismo" else "s", color=line, mfc="white", ms=4, label=label)
-            _zero(ax)
-            ax.set_title(f"({'ab'[j]}) {spec.short}: traspaso a {H} meses")
-            ax = axes[1, j]
-            d = info[info["model"] == name].sort_values("grid_threshold")
-            ax.plot(d["grid_threshold"], d["log_ml_tvar"] - d["log_ml_tvar"].max(), "o-", color="0", ms=3, lw=0.9)
-            ax.axvline(cfg["estimation"]["threshold"], color="0.5", ls=":", lw=0.8)
-            ax.set_xlabel("Umbral de confianza (puntos)")
-            if j == 0:
-                ax.set_ylabel("log verosimilitud marginal\n(respecto al máximo)")
-        axes[0, 0].set_ylabel("Traspaso al PBI (p.p.)")
-        h, l = axes[0, 0].get_legend_handles_labels()
-        fig.legend(h, l, loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.01))
-        fig.tight_layout(rect=(0, 0.04, 1, 1))
-        return _save(fig, "fig_threshold_grid")
+    paths = []
+    for with_ml, stem in ((False, "fig_threshold_pt"), (True, "fig_threshold_grid")):
+        with plt.rc_context(STYLE):
+            nrow = 2 if with_ml else 1
+            fig, axes = plt.subplots(nrow, len(specs), figsize=(6.5, 5.0 if with_ml else 2.9), sharex=True,
+                                     squeeze=False)
+            for j, (name, spec) in enumerate(specs.items()):
+                ax = axes[0, j]
+                for k, reg in enumerate(("pesimismo", "optimismo")):
+                    d = pt[(pt["model"] == name) & (pt["group"] == reg) & (pt["horizonte"] == H)].sort_values("grid_threshold")
+                    x = d["grid_threshold"] + (k - 0.5) * 0.3
+                    line, _, _, label = REGIME[reg]
+                    ax.vlines(x, d["p16"], d["p84"], colors=line, lw=2)
+                    ax.plot(x, d["p50"], "o" if reg == "optimismo" else "s", color=line, mfc="white", ms=4, label=label)
+                _zero(ax)
+                ax.axvline(cfg["estimation"]["threshold"], color="0.5", ls=":", lw=0.8)
+                ax.set_title(f"({'ab'[j]}) {spec.short}: traspaso a {H} meses")
+                if with_ml:
+                    ax = axes[1, j]
+                    d = info[info["model"] == name].sort_values("grid_threshold")
+                    ax.plot(d["grid_threshold"], d["log_ml_tvar"] - d["log_ml_tvar"].max(), "o-", color="0", ms=3, lw=0.9)
+                    ax.axvline(cfg["estimation"]["threshold"], color="0.5", ls=":", lw=0.8)
+                    if j == 0:
+                        ax.set_ylabel("log verosimilitud marginal\n(respecto al máximo)")
+                axes[-1, j].set_xlabel("Umbral de confianza (puntos)")
+            axes[0, 0].set_ylabel("Traspaso al PBI (p.p.)")
+            h, l = axes[0, 0].get_legend_handles_labels()
+            fig.legend(h, l, loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.01))
+            fig.tight_layout(rect=(0, 0.04 if with_ml else 0.07, 1, 1))
+            paths.append(_save(fig, stem))
+    return paths
 
 
 def _bin_probability(d: pd.DataFrame, edges: np.ndarray) -> np.ndarray:
