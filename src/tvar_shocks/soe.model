@@ -1,0 +1,53 @@
+% Small open economy with forward-looking investment (IRIS / irispie syntax).
+%
+% Monthly, linear, percent deviations from the steady state. The external
+% variables follow the paths of the TVAR's generalized impulse responses: they
+% enter as anticipated shocks known from the impact month on, so agents see the
+% whole path after the surprise (rational expectations for a one-time shock).
+%
+% Confidence enters through a single parameter, phi: the responsiveness of
+% investment to the expected return on capital (real options under
+% uncertainty). Everything else is common to both regimes.
+
+!transition-variables
+    "Real GDP (constant prices)"                     y,
+    "Private consumption"                            c,
+    "Private investment"                             i,
+    "Export volume"                                  x,
+    "Expected discounted export price"               qp,
+    "Expected discounted demand"                     qy,
+    "Real fiscal revenues"                           rev,
+    "Export price index"                             p,
+    "Foreign demand (China industrial production)"   yf
+
+!anticipated-shocks
+    "Export price path"                              e_p,
+    "Foreign demand path"                            e_yf
+
+!parameters
+    w_c, w_i, w_x, eta, h, mpc, chi, beta, rho_i, phi, a_p, a_y, tau_p, tau_y
+
+!transition-equations
+    "GDP at constant prices: domestic value added of spending plus exports"
+    y = w_c*c + w_i*i + w_x*x;
+
+    "Export volumes respond to foreign demand, not to export prices"
+    x = eta*yf;
+
+    "Consumption: partial adjustment to income and to the households' share of the price windfall"
+    c = h*c[-1] + (1 - h)*(mpc*y + chi*p);
+
+    "Expected discounted export price"
+    qp = beta*qp[+1] + (1 - beta)*p;
+
+    "Expected discounted demand"
+    qy = beta*qy[+1] + (1 - beta)*y;
+
+    "Investment: partial adjustment to the expected return, scaled by confidence"
+    i = rho_i*i[-1] + (1 - rho_i)*phi*(a_p*qp + a_y*qy);
+
+    "Fiscal revenues: commodity taxes and activity"
+    rev = tau_p*p + tau_y*y;
+
+    p = e_p;
+    yf = e_yf;

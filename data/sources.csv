@@ -1,0 +1,13 @@
+variable,descripcion,transformacion,fuente,codigo,unidad_origen,notas
+g_ip_chn,Producción industrial de China,var. % interanual (publicada),National Bureau of Statistics of China,Value added of industry above designated size (YoY),% interanual,Serie publicada en tasa interanual por el NBS; descarga manual incluida en data/raw/external.csv
+g_ip_usa,Producción industrial de EE.UU.,var. % interanual,FRED (Board of Governors),INDPRO,índice 2017 = 100,
+fed,Tasa de los fondos federales,nivel,FRED,FEDFUNDS,% anual,
+g_tot,Términos de intercambio,var. % interanual,BCRP,PN38923BM,índice 2007 = 100,Serie revisada periódicamente por el BCRP
+g_xpi,Índice de precios de exportación,var. % interanual,BCRP,PN38915BM,índice 2007 = 100,Serie revisada periódicamente por el BCRP
+exp,Expectativas de la economía a 3 meses (confianza empresarial),nivel,BCRP (Encuesta de Expectativas Macroeconómicas),PD38045AM,índice de difusión (puntos),Por encima de 50: optimismo; por debajo: pesimismo
+g_gdp,PBI real,var. % interanual,BCRP,PN01773AM; PN02538AQ,índice 2007 = 100; millones de S/ de 2007,Desde 2003 el índice mensual; 2002-2003 completado con el PBI trimestral interpolado a mensual por spline cúbico (valores en el último mes del trimestre)
+g_cpi,Inflación (IPC Lima Metropolitana),var. % interanual,BCRP,PN38705PM,índice dic. 2021 = 100,
+int,Tasa de interés interbancaria,nivel,BCRP,PN07819NM,% anual,
+g_ner,Tipo de cambio nominal,var. % interanual,BCRP,PN01210PM,S/ por US$,
+g_rev,"Ingresos corrientes del gobierno central en términos reales, suma de 12 meses",var. % interanual de la suma móvil de 12 meses,BCRP,PN38689FM,millones de S/ de dic. 2021,Agregada el 2026-10-16 desde la API del BCRP (vintage de esa fecha); la suma de 12 meses elimina el calendario de pagos del impuesto a la renta
+g_kimp,Volumen de importación de bienes de capital sin materiales de construcción,var. % interanual,BCRP,PD37978BM,índice,Agregada el 2026-10-17 desde la API del BCRP (vintage de esa fecha); disponible desde 2007-04

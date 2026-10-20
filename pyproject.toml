@@ -1,0 +1,34 @@
+[project]
+name = "tvar-external-shocks"
+version = "1.0.0"
+description = "Paquete de réplica: transmisión de los choques externos a la economía peruana según la confianza empresarial y el ruido político"
+authors = [{ name = "William Sánchez Tapia" }, { name = "Renato Vassallo" }]
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    # ThresholdVAR con delay/threshold fijos, covid_mode, historias elegidas y exogeneidad de bloque: MacroPy >= 0.3.3
+    "macropy @ https://github.com/RenatoVassallo/MacroPy/releases/download/0.3.3/macropy-0.3.3-py3-none-any.whl",
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "joblib",
+    "irispie>=0.50",            # modelo estructural (soe.model)
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+tvar_shocks = ["*.model"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
