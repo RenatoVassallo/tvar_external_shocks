@@ -38,12 +38,14 @@ def _write(name: str, body: str) -> None:
 
 
 def _table(caption: str, label: str, colspec: str, header: str, rows: str, note: str,
-           placement: str = "t") -> str:
-    """Booktabs table without outer column padding; ``placement="H"`` pins appendix tables."""
+           placement: str = "t", source: str = "Estimaciones de los autores") -> str:
+    """Booktabs table without outer column padding; ``placement="H"`` pins appendix tables.
+    Every table carries a source line, as the journal requires."""
     return (f"\\begin{{table}}[{placement}]\n\\centering\n\\begin{{threeparttable}}\n\\caption{{{caption}}}\n"
             f"\\label{{{label}}}\n\\small\n\\begin{{tabular}}{{@{{}}{colspec}@{{}}}}\n\\toprule\n{header}\\midrule\n{rows}"
             f"\\bottomrule\n\\end{{tabular}}\n\\begin{{tablenotes}}[flushleft]\n\\footnotesize\n"
-            f"\\item \\textit{{Nota:}} {note}\n\\end{{tablenotes}}\n\\end{{threeparttable}}\n\\end{{table}}\n")
+            f"\\item \\textit{{Nota:}} {note} \\textit{{Fuente:}} {source}.\n\\end{{tablenotes}}\n"
+            f"\\end{{threeparttable}}\n\\end{{table}}\n")
 
 
 def _horizon_header(H) -> str:
@@ -201,8 +203,11 @@ def table_calibration(cfg) -> None:
     """Parameters of the structural model and sensitivity of its predictions."""
     cal = pd.read_csv(results_dir() / "structural_calibration.csv").iloc[0]
     sens = pd.read_csv(results_dir() / "structural_sensitivity.csv")
-    rows = "\\multicolumn{3}{l}{\\textit{Fijados}} \\\\\n"
-    for key, sym, text in FIXED_DOC:
+    rows = "\\multicolumn{3}{l}{\\textit{Fijados con las cuentas nacionales (BCRP, promedios 2010-2019)}} \\\\\n"
+    for key, sym, text in FIXED_DOC[:3]:
+        rows += f"\\quad {sym} & {cal[key]:g} & {text} \\\\\n"
+    rows += "\\addlinespace\n\\multicolumn{3}{l}{\\textit{Supuestos del ejercicio}} \\\\\n"
+    for key, sym, text in FIXED_DOC[3:]:
         rows += f"\\quad {sym} & {cal[key]:g} & {text} \\\\\n"
     rows += "\\addlinespace\n\\multicolumn{3}{l}{\\textit{Calibrados con el traspaso a 12 meses del TVAR}} \\\\\n"
     for key, sym, text in (("eta", "$\\eta$", "Elasticidad de las exportaciones a la demanda externa"),
@@ -211,9 +216,12 @@ def table_calibration(cfg) -> None:
                             "Sensibilidad relativa de la inversión en pesimismo ($\\phi = 1$ en optimismo)")):
         rows += f"\\quad {sym} & {cal[key]:.2f} & {text} \\\\\n"
     rng = lambda c: f"{sens[c].min():.2f} a {sens[c].max():.2f}"
-    note = (f"Modelo de la Sección~\\ref{{sec:mecanismo}}, en frecuencia mensual. Los tres parámetros "
-            "calibrados reproducen el traspaso a 12 meses de la demanda externa en optimismo y de los precios "
-            "de exportación en ambos regímenes. Sensibilidad: con $a_y \\in \\{"
+    note = (f"Modelo de la Sección~\\ref{{sec:mecanismo}}, en frecuencia mensual. Las participaciones son las "
+            "de las cuentas nacionales del BCRP multiplicadas por el contenido doméstico de cada componente; "
+            "los parámetros de dinámica y de respuesta son supuestos del ejercicio dentro de rangos usuales en "
+            "la literatura, sin una fuente específica. Los tres parámetros calibrados reproducen el traspaso a "
+            "12 meses de la demanda externa en optimismo y de los precios de exportación en ambos regímenes. "
+            "Sensibilidad: con $a_y \\in \\{"
             + ", ".join(f"{v:g}" for v in sorted(sens['a_y'].unique())) + "\\}$ y $m \\in \\{"
             + ", ".join(f"{v:g}" for v in sorted(sens['mpc'].unique())) + "\\}$, "
             f"$\\phi_{{\\text{{pes}}}}$ va de {rng('phi_pes')}, el traspaso predicho de la demanda externa en "
@@ -222,7 +230,7 @@ def table_calibration(cfg) -> None:
     header = "Parámetro & Valor & Descripción \\\\\n"
     _write("tab_calibration", _table("Parámetros del modelo", "tab:calibration",
                                      "cc>{\\raggedright\\arraybackslash}p{10cm}", header, rows, note,
-                                     placement="H"))
+                                     placement="H", source="Cálculos de los autores"))
 
 
 def table_robustness(cfg) -> None:
@@ -265,7 +273,7 @@ def table_fiscal(cfg) -> None:
     pt = pd.read_csv(results_dir() / "pass_through_robustness.csv")
     pt = pt[pt["variant"] == "fiscal"]
     H = cfg["girf"]["pass_through"]
-    names = {"g_rev": "Ingresos fiscales", "g_gdp": "PBI"}
+    names = {"g_rev": "Ingresos", "g_gdp": "PBI"}
     labels = {"chn_fiscal": "Producción industrial de China, +1 p.p.",
               "ipx_fiscal": "Índice de precios de exportación, +10 p.p."}
     rows = ""
@@ -275,10 +283,15 @@ def table_fiscal(cfg) -> None:
             for reg in ("pesimismo", "optimismo"):
                 dd = d[(d["response"] == response) & (d["group"] == reg)].set_index("horizonte")
                 rows += f"\\quad {names[response]}, {reg} & " + " & ".join(_cell(dd.loc[h]) for h in H) + " \\\\\n"
+            probs = [_variant_asymmetry(cfg, "fiscal", name, response, h) for h in H]
+            rows += (f"\\quad {names[response]}, $\\Pr(\\text{{opt.}} > \\text{{pes.}})$ & "
+                     + " & ".join(f"\\multicolumn{{2}}{{c}}{{{p:.2f}}}" for p in probs) + " \\\\\n")
         rows += "\\addlinespace\n"
-    note = ("Modelo base ampliado con los ingresos corrientes reales del gobierno central (suma móvil de 12 "
-            "meses, variación porcentual interanual), ordenados después del PBI. Efecto traspaso calculado con "
-            "funciones impulso-respuesta generalizadas, como en la Tabla~\\ref{tab:pass_through}.")
+    note = ("Modelo base ampliado con los ingresos corrientes reales del gobierno central (variación porcentual "
+            "interanual de la suma móvil de 12 meses), ordenados después del PBI; muestra 2002-2025. Efecto "
+            "traspaso calculado con funciones impulso-respuesta generalizadas, como en la "
+            "Tabla~\\ref{tab:pass_through}: mediana y percentiles 16 y 84 de la distribución posterior, y "
+            "proporción de extracciones en que el traspaso en optimismo supera al de pesimismo.")
     _write("tab_fiscal", _table("Efecto traspaso a los ingresos fiscales y al PBI", "tab:fiscal",
                                 "l" + "cc" * len(H), _horizon_header(H), rows, note))
 

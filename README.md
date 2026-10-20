@@ -104,7 +104,7 @@ present.
   each delay is closed form, the prior is conjugate in each regime and the draws of
   $(d, B_i, \Sigma_i)$ are independent, with no Gibbs chain to converge. Explosive draws are rejected
   (41% of the proposals are accepted with China and 52% with the export price index).
-- **Pandemic**: *pandemic priors* (Cascaldi-Garcia, 2025) with diffuse dummies for January 2020 to
+- **Pandemic**: *pandemic priors* (Cascaldi-Garcia, 2022) with diffuse dummies for January 2020 to
   June 2021, equivalent to taking those months out of the likelihood, together with the two following
   months, whose lags contain the outliers.
 - **Generalized impulse responses** (Koop, Pesaran and Potter, 1996): for each draw, the difference
