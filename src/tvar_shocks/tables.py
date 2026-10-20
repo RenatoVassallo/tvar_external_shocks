@@ -230,7 +230,7 @@ def table_calibration(cfg) -> None:
     header = "Parámetro & Valor & Descripción \\\\\n"
     _write("tab_calibration", _table("Parámetros del modelo", "tab:calibration",
                                      "cc>{\\raggedright\\arraybackslash}p{10cm}", header, rows, note,
-                                     placement="H", source="Cálculos de los autores"))
+                                     placement="tbp", source="Cálculos de los autores"))
 
 
 PAPER_VARIANTS = ["lenza_primiceri", "pre2020", "usa", "tot", "joint_block"]   # Table 3 of the paper
