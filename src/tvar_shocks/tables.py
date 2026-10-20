@@ -38,11 +38,11 @@ def _write(name: str, body: str) -> None:
 
 
 def _table(caption: str, label: str, colspec: str, header: str, rows: str, note: str,
-           placement: str = "t", source: str = "Estimaciones de los autores") -> str:
+           placement: str = "t", source: str = "Estimaciones de los autores", size: str = "small") -> str:
     """Booktabs table without outer column padding; ``placement="H"`` pins appendix tables.
     Every table carries a source line, as the journal requires."""
     return (f"\\begin{{table}}[{placement}]\n\\centering\n\\begin{{threeparttable}}\n\\caption{{{caption}}}\n"
-            f"\\label{{{label}}}\n\\small\n\\begin{{tabular}}{{@{{}}{colspec}@{{}}}}\n\\toprule\n{header}\\midrule\n{rows}"
+            f"\\label{{{label}}}\n\\{size}\n\\begin{{tabular}}{{@{{}}{colspec}@{{}}}}\n\\toprule\n{header}\\midrule\n{rows}"
             f"\\bottomrule\n\\end{{tabular}}\n\\begin{{tablenotes}}[flushleft]\n\\footnotesize\n"
             f"\\item \\textit{{Nota:}} {note} \\textit{{Fuente:}} {source}.\n\\end{{tablenotes}}\n"
             f"\\end{{threeparttable}}\n\\end{{table}}\n")
@@ -229,8 +229,8 @@ def table_calibration(cfg) -> None:
             f"con la sensibilidad de optimismo va de {rng('ipx_pes_12_same_phi')}.")
     header = "Parámetro & Valor & Descripción \\\\\n"
     _write("tab_calibration", _table("Parámetros del modelo", "tab:calibration",
-                                     "cc>{\\raggedright\\arraybackslash}p{10cm}", header, rows, note,
-                                     placement="tbp", source="Cálculos de los autores"))
+                                     "cc>{\\raggedright\\arraybackslash}p{11.5cm}", header, rows, note,
+                                     placement="htbp", source="Cálculos de los autores", size="footnotesize"))
 
 
 PAPER_VARIANTS = ["lenza_primiceri", "pre2020", "usa", "tot", "joint_block"]   # Table 3 of the paper
