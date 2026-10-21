@@ -19,13 +19,14 @@ dictionary of each series (description, transformation, source and code) is in `
 | `int` | Interbank interest rate | level | BCRP `PN07819NM` |
 | `g_ner` | Nominal exchange rate | year-on-year % change | BCRP `PN01210PM` |
 | `g_rev` | Central government current revenue, real, 12-month sum | year-on-year % change | BCRP `PN38689FM` |
+| `g_rev3` | Central government current revenue, real, 3-month sum | year-on-year % change | BCRP `PN38689FM` |
 | `g_kimp` | Volume of capital goods imports excluding construction materials | year-on-year % change | BCRP `PD37978BM` |
 
 Provenance:
 
 - The first ten columns are the `database_tvar.xlsx` database of the MATLAB code of the previous
   version of the paper (`a_makedatabase.m`), unchanged.
-- `g_rev` was added on 2026-10-16 and `g_kimp` on 2026-10-17 from the BCRP API.
+- `g_rev` was added on 2026-10-16, `g_kimp` on 2026-10-17 and `g_rev3` on 2026-10-21 from the BCRP API.
 - The political noise index used in the robustness exercise of Section 6.4 of the paper is not
   distributed (it was built from press headlines and snippets collected for the previous version, and
   neither the texts nor the collection code were kept). The results that use it are reported in the
@@ -43,7 +44,7 @@ difference with the frozen copy without modifying it:
 - GDP: the monthly index from 2003; the months of 2002 and 2003 without a year-on-year change are
   filled with quarterly GDP interpolated to monthly by a cubic spline, each quarter at its last month.
 - Year-on-year changes are `100 (x_t / x_{t-12} - 1)`.
-- Fiscal revenue is summed over 12 months before taking the change, to remove the income tax calendar.
+- Fiscal revenue is summed over 3 months (`g_rev3`, the paper's measure) or 12 months (`g_rev`) before taking the change, to remove the income tax calendar.
 
 The BCRP revises the national accounts, the terms of trade and the export price index, so a rebuild
 made today differs from the frozen copy in those series (for example, up to 2 points in some months of

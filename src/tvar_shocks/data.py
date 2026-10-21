@@ -131,6 +131,7 @@ def build(end: str | None = None) -> pd.DataFrame:
     db["g_ner"] = yoy(m["ner"])
     db["g_kimp"] = yoy(m["kimp"])
     db["g_rev"] = yoy(m["rev"].rolling(12).sum())                       # 12-month sum: no tax calendar
+    db["g_rev3"] = yoy(m["rev"].rolling(3).sum())                       # 3-month sum: the measure the paper uses
     db.index.name = "date"
     db = db.loc[db["exp"].first_valid_index():]
     return db.loc[:end] if end else db

@@ -66,9 +66,9 @@ def table_pass_through(cfg) -> None:
         rows += f"\\multicolumn{{{1 + 2 * len(H)}}}{{l}}{{\\textit{{{spec.label}, +{spec.shock:g} p.p.}}}} \\\\\n"
         for reg in ("pesimismo", "optimismo"):
             d = pt[(pt["model"] == name) & (pt["group"] == reg)].set_index("horizonte")
-            rows += f"\\quad {REGIME[reg]} & " + " & ".join(_cell(d.loc[h]) for h in H) + " \\\\\n"
+            rows += f"{REGIME[reg]} & " + " & ".join(_cell(d.loc[h]) for h in H) + " \\\\\n"
         a = asym[asym["model"] == name].set_index("horizonte")
-        rows += ("\\quad $\\Pr(\\text{optimismo} > \\text{pesimismo})$ & "
+        rows += ("$\\Pr(\\text{optimismo} > \\text{pesimismo})$ & "
                  + " & ".join(f"\\multicolumn{{2}}{{c}}{{{a.loc[h, 'prob_optimism_larger']:.2f}}}" for h in H)
                  + " \\\\\n\\addlinespace\n")
     note = ("Efecto traspaso: respuesta acumulada del crecimiento del PBI dividida por la respuesta acumulada "
@@ -96,7 +96,7 @@ def table_pass_through_bands(cfg) -> None:
             label = (f"$c < {hi:g}$" if lo <= 0 else
                      (f"$c \\geq {lo:g}$" if hi >= 100 else f"${lo:g} \\leq c < {hi:g}$"))
             dd = d[d["group"] == group].set_index("horizonte")
-            rows += (f"\\quad {label} ({counts[group]} meses) & "
+            rows += (f"{label} ({counts[group]} meses) & "
                      + " & ".join(_cell(dd.loc[h]) for h in H) + " \\\\\n")
         rows += "\\addlinespace\n"
     delay = int(info["band_delay"].iloc[0])
@@ -142,7 +142,7 @@ def table_state(cfg) -> None:
             else:
                 d = rob[(rob["variant"] == variant) & (rob["model"] == shock)]
                 prob = _variant_asymmetry(cfg, variant, shock, "g_gdp", H)
-            rows += _state_row(f"\\quad {text}", d, prob)
+            rows += _state_row(f"{text}", d, prob)
         rows += "\\addlinespace\n"
     header = (" & \\multicolumn{2}{c}{Pesimismo} & \\multicolumn{2}{c}{Optimismo} & \\\\\n"
               "\\cmidrule(lr){2-3}\\cmidrule(lr){4-5}\n"
@@ -168,12 +168,12 @@ def table_investment(cfg) -> None:
         for text, variant, suffix, names in specs:
             model = f"{shock}_{suffix}"
             d = rob[(rob["variant"] == variant) & (rob["model"] == model)]
-            rows += f"\\quad {text} & & & & \\\\\n"
+            rows += f"{text} & & & & \\\\\n"
             for g, gl in zip(("pesimismo", "optimismo"), names[:2]):
                 dd = d[d["group"] == g].set_index("horizonte")
-                rows += f"\\qquad {gl.capitalize()} & " + " & ".join(_cell(dd.loc[h]) for h in H) + " \\\\\n"
+                rows += f"{gl.capitalize()} & " + " & ".join(_cell(dd.loc[h]) for h in H) + " \\\\\n"
             probs = [_variant_asymmetry(cfg, variant, model, "g_kimp", h) for h in H]
-            rows += (f"\\qquad {names[2]} & "
+            rows += (f"{names[2]} & "
                      + " & ".join(f"\\multicolumn{{2}}{{c}}{{{p:.2f}}}" for p in probs) + " \\\\\n")
         rows += "\\addlinespace\n"
     note = ("Respuesta acumulada del crecimiento interanual del volumen de importación de bienes de capital "
@@ -205,16 +205,16 @@ def table_calibration(cfg) -> None:
     sens = pd.read_csv(results_dir() / "structural_sensitivity.csv")
     rows = "\\multicolumn{3}{l}{\\textit{Fijados con las cuentas nacionales (BCRP, promedios 2010-2019)}} \\\\\n"
     for key, sym, text in FIXED_DOC[:3]:
-        rows += f"\\quad {sym} & {cal[key]:g} & {text} \\\\\n"
+        rows += f"{sym} & {cal[key]:g} & {text} \\\\\n"
     rows += "\\addlinespace\n\\multicolumn{3}{l}{\\textit{Supuestos del ejercicio}} \\\\\n"
     for key, sym, text in FIXED_DOC[3:]:
-        rows += f"\\quad {sym} & {cal[key]:g} & {text} \\\\\n"
+        rows += f"{sym} & {cal[key]:g} & {text} \\\\\n"
     rows += "\\addlinespace\n\\multicolumn{3}{l}{\\textit{Calibrados con el traspaso a 12 meses del TVAR}} \\\\\n"
     for key, sym, text in (("eta", "$\\eta$", "Elasticidad de las exportaciones a la demanda externa"),
                            ("a_p", "$a_p$", "Sensibilidad de la inversión al precio esperado"),
                            ("phi_pes", "$\\phi_{\\text{pes}}$",
                             "Sensibilidad relativa de la inversión en pesimismo ($\\phi = 1$ en optimismo)")):
-        rows += f"\\quad {sym} & {cal[key]:.2f} & {text} \\\\\n"
+        rows += f"{sym} & {cal[key]:.2f} & {text} \\\\\n"
     rng = lambda c: f"{sens[c].min():.2f} a {sens[c].max():.2f}"
     note = (f"Modelo de la Sección~\\ref{{sec:mecanismo}}, en frecuencia mensual. Las participaciones son las "
             "de las cuentas nacionales del BCRP multiplicadas por el contenido doméstico de cada componente; "
@@ -233,29 +233,26 @@ def table_calibration(cfg) -> None:
                                      placement="htbp", source="Cálculos de los autores", size="footnotesize"))
 
 
-PAPER_VARIANTS = ["lenza_primiceri", "pre2020", "usa", "tot"]   # Table 3 of the paper
+PAPER_ORDER = ["base", "base_linear_irf", "lenza_primiceri", "lp", "usa", "tot", "pre2020"]        # Table 3 of the paper
+FULL_ORDER = ["base", "base_linear_irf", "lenza_primiceri", "lp", "lp45", "prior_variance", "delay_2", "prior_loose",
+              "usa", "tot", "joint_block", "tot_block", "fiscal", "pre2020"]
 
 
-def _robustness_table(cfg, variants, lp_thresholds, name: str, label: str, caption: str) -> None:
-    """Pass-through at 12 months by specification, with Pr(optimism > pessimism) where it is defined."""
+def _robustness_table(cfg, order, name: str, label: str, caption: str) -> None:
+    """Pass-through at 12 months by specification, in the given order, with Pr(optimism > pessimism)."""
     H = cfg["girf"]["pass_through"][0]
     est_thr = cfg["estimation"]["threshold"]
     base = _read_pt("pass_through.csv")
     rob = _read_pt("pass_through_robustness.csv")
-    rob = rob[rob["variant"].isin(variants)]
-    rob["order"] = rob["variant"].map({v: i for i, v in enumerate(variants)})
-    rob = rob.sort_values("order", kind="stable").drop(columns="order")
-    frames = [base[base["variant"].isin(["base", "base_linear_irf"])], rob]
     lp = pd.read_csv(results_dir() / "lp_pass_through.csv")
-    lp = lp[(lp["sample"] == "completa_sin_covid") & lp["threshold"].isin(lp_thresholds)]
-    frames.append(lp.assign(variant=lp["threshold"].map(lambda t: f"lp_{t:g}")))
-    pt = pd.concat(frames)
+    lp = lp[lp["sample"] == "completa_sin_covid"]
+    frames = {"base": base[base["variant"] == "base"], "base_linear_irf": base[base["variant"] == "base_linear_irf"],
+              "lp": lp[lp["threshold"] == est_thr].assign(variant="lp"), "lp45": lp[lp["threshold"] == 45.0].assign(variant="lp45")}
+    pt = pd.concat([frames[k] if k in frames else rob[rob["variant"] == k] for k in order])
     asym = pd.read_csv(results_dir() / "asymmetry.csv")
     asym = asym[asym["horizonte"] == H].set_index(["model", "method"])
-    descr = {"base": "Especificación base (GIRF)",
-             "base_linear_irf": "IRF convencional por régimen",
-             f"lp_{est_thr:g}": "Proyecciones locales",
-             "lp_45": "Proyecciones locales, pesimismo profundo ($c < 45$)",
+    descr = {"base": "Especificación base (GIRF)", "base_linear_irf": "IRF convencional por régimen",
+             "lp": "Proyecciones locales", "lp45": "Proyecciones locales, pesimismo profundo ($c < 45$)",
              **{k: v.get("short", v["description"]) for k, v in cfg["robustness"]["variants"].items()}}
     shock = {"chn": "China", "ipx": "IPX", "usa": "EE.UU.", "tot": "TI"}
     rows = ""
@@ -265,18 +262,17 @@ def _robustness_table(cfg, variants, lp_thresholds, name: str, label: str, capti
             prob = asym.loc[(model, "girf"), "prob_optimism_larger"]
         elif variant == "base_linear_irf":
             prob = asym.loc[(model, "linear_irf"), "prob_optimism_larger"]
-        elif variant.startswith("lp_"):
+        elif variant.startswith("lp"):
             prob = None
         else:
             prob = _variant_asymmetry(cfg, variant, model, "g_gdp", H)
         rows += (f"{descr.get(variant, variant)} & {shock[model.split('_')[0]]} & "
-                 + " & ".join(_cell(c) for c in cells)
-                 + (" & " if prob is None else f" & {prob:.2f}") + " \\\\\n")
+                 + " & ".join(_cell(c) for c in cells) + (" & " if prob is None else f" & {prob:.2f}") + " \\\\\n")
     header = (" & & \\multicolumn{2}{c}{Pesimismo} & \\multicolumn{2}{c}{Optimismo} & \\\\\n"
               "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\n"
               "Especificación & Choque & Mediana & Int. 68\\% & Mediana & Int. 68\\% & Pr \\\\\n")
-    note = ("Efecto traspaso al crecimiento del PBI a 12 meses, muestra 2002-2025 salvo donde se indica. China e IPX: choques de "
-            "+1 p.p. en la producción industrial de China y de +10 p.p. en el índice de precios de exportación; "
+    note = ("Efecto traspaso al crecimiento del PBI a 12 meses, muestra 2002-2025 salvo donde se indica. China e IPX: "
+            "choques de +1 p.p. en la producción industrial de China y de +10 p.p. en el índice de precios de exportación; "
             "EE.UU.: +1 p.p. en la producción industrial de EE.UU.; TI: +10 p.p. en los términos de intercambio. "
             "Pr: probabilidad posterior de que el traspaso sea mayor en optimismo, calculada extracción por "
             "extracción. Las proyecciones locales son el multiplicador acumulado de Ramey y Zubairy (2018) "
@@ -287,33 +283,32 @@ def _robustness_table(cfg, variants, lp_thresholds, name: str, label: str, capti
 
 
 def table_robustness(cfg) -> None:
-    est_thr = cfg["estimation"]["threshold"]
-    _robustness_table(cfg, PAPER_VARIANTS, [est_thr], "tab_robustness", "tab:robustness",
+    _robustness_table(cfg, PAPER_ORDER, "tab_robustness", "tab:robustness",
                       "Efecto traspaso a 12 meses bajo especificaciones alternativas")
-    _robustness_table(cfg, TABLE4_VARIANTS + ["pre2020"], [est_thr, 45.0], "tab_robustness_full",
-                      "tab:robustness_full", "Efecto traspaso a 12 meses bajo todas las especificaciones alternativas")
+    _robustness_table(cfg, FULL_ORDER, "tab_robustness_full", "tab:robustness_full",
+                      "Efecto traspaso a 12 meses bajo todas las especificaciones alternativas")
 
 
 def table_fiscal(cfg) -> None:
     pt = pd.read_csv(results_dir() / "pass_through_robustness.csv")
     pt = pt[pt["variant"] == "fiscal"]
     H = cfg["girf"]["pass_through"][:2]                 # 12 and 24 months: the 60-month horizon adds width, not information
-    names = {"g_rev": "Ingresos", "g_gdp": "PBI"}
+    names = {"g_rev3": "Ingresos", "g_gdp": "PBI"}
     labels = {"chn_fiscal": "Producción industrial de China, +1 p.p.",
               "ipx_fiscal": "Índice de precios de exportación, +10 p.p."}
     rows = ""
     for name, d in pt.groupby("model", sort=False):
         rows += f"\\multicolumn{{{1 + 2 * len(H)}}}{{l}}{{\\textit{{{labels[name]}}}}} \\\\\n"
-        for response in ("g_rev", "g_gdp"):
+        for response in ("g_rev3", "g_gdp"):
             for reg in ("pesimismo", "optimismo"):
                 dd = d[(d["response"] == response) & (d["group"] == reg)].set_index("horizonte")
-                rows += f"\\quad {names[response]}, {reg} & " + " & ".join(_cell(dd.loc[h]) for h in H) + " \\\\\n"
+                rows += f"{names[response]}, {reg} & " + " & ".join(_cell(dd.loc[h]) for h in H) + " \\\\\n"
             probs = [_variant_asymmetry(cfg, "fiscal", name, response, h) for h in H]
-            rows += (f"\\quad {names[response]}, $\\Pr(\\text{{opt.}} > \\text{{pes.}})$ & "
+            rows += (f"{names[response]}, $\\Pr(\\text{{opt.}} > \\text{{pes.}})$ & "
                      + " & ".join(f"\\multicolumn{{2}}{{c}}{{{p:.2f}}}" for p in probs) + " \\\\\n")
         rows += "\\addlinespace\n"
     note = ("Modelo base ampliado con los ingresos corrientes reales del gobierno central (variación porcentual "
-            "interanual de la suma móvil de 12 meses), ordenados después del PBI; muestra 2002-2025. Efecto "
+            "interanual de la suma móvil de 3 meses), ordenados después del PBI; muestra 2002-2025. Efecto "
             "traspaso calculado con funciones impulso-respuesta generalizadas, como en la "
             "Tabla~\\ref{tab:pass_through}: mediana y percentiles 16 y 84 de la distribución posterior, y "
             "proporción de extracciones en que el traspaso en optimismo supera al de pesimismo.")

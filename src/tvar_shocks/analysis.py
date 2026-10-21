@@ -40,7 +40,7 @@ def _info(model, spec, variant: str) -> dict:
 def _pt_frame(resp: dict, spec, horizons, variant: str) -> pd.DataFrame:
     """Pass-through of GDP (and of fiscal revenues or capital goods imports when the model has them)."""
     frames = []
-    for response in [v for v in ("g_gdp", "g_rev", "g_kimp") if v in spec.variables]:
+    for response in [v for v in ("g_gdp", "g_rev", "g_rev3", "g_kimp") if v in spec.variables]:
         for group, arr in resp.items():
             pt = pass_through(arr, spec, horizons, response=response).reset_index()
             pt.insert(0, "group", group)
