@@ -338,8 +338,10 @@ def fig_methods(cfg):
     pt = _gdp(pd.read_csv(results_dir() / "pass_through.csv"))
     lp = pd.read_csv(results_dir() / "lp_pass_through.csv")
     lp = lp[(lp["sample"] == "completa_sin_covid") & (lp["threshold"] == cfg["estimation"]["threshold"])]
+    rob = _gdp(pd.read_csv(results_dir() / "pass_through_robustness.csv"))
     sources = [("IRF convencional por régimen", pt[pt["variant"] == "base_linear_irf"], "0.6", "s"),
                ("GIRF (base)", pt[pt["variant"] == "base"], "0", "o"),
+               ("GIRF, escalas de Lenza y Primiceri", rob[rob["variant"] == "lenza_primiceri"], "0.2", "D"),
                ("Proyecciones locales", lp, "0.35", "^")]
     specs = model_specs(cfg)
     horizons = cfg["lp"]["horizons"]
@@ -353,17 +355,17 @@ def fig_methods(cfg):
                         row = d[(d["model"] == name) & (d["group"] == reg) & (d["horizonte"] == H)]
                         if row.empty or row["p50"].isna().all():
                             continue
-                        x = r * 4 + k
+                        x = r * 5 + k
                         row = row.iloc[0]
                         ax.vlines(x, row["p16"], row["p84"], colors=color, lw=2.4)
                         ax.plot(x, row["p50"], marker, color=color, mfc="white", ms=5, zorder=3,
                                 label=label if (r == 0 and i == 0 and j == 0) else None)
                 _zero(ax)
-                ax.set_xticks([1, 5]); ax.set_xticklabels(["Pesimismo", "Optimismo"])
+                ax.set_xticks([1.5, 6.5]); ax.set_xticklabels(["Pesimismo", "Optimismo"])
                 ax.set_title(f"({'abcd'[2 * i + j]}) {spec.short}, +{spec.shock:g} p.p.: {H} meses")
         h, l = axes[0, 0].get_legend_handles_labels()
-        fig.legend(h, l, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.01))
-        fig.tight_layout(rect=(0, 0.05, 1, 1))
+        fig.legend(h, l, loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.01))
+        fig.tight_layout(rect=(0, 0.08, 1, 1))
         return _save(fig, "fig_methods")
 
 

@@ -77,7 +77,7 @@ def table_pass_through(cfg) -> None:
             "régimen y permiten que el régimen cambie a lo largo del horizonte. Mediana y percentiles 16 y 84 "
             "de la distribución posterior. La última fila de cada panel es la proporción de extracciones en "
             "que el traspaso en optimismo supera al de pesimismo.")
-    _write("tab_pass_through", _table("Efecto traspaso de los choques externos al PBI", "tab:pass_through",
+    _write("tab_pass_through", _table("Efecto traspaso de los choques externos al crecimiento del PBI", "tab:pass_through",
                                       "l" + "cc" * len(H), _horizon_header(H), rows, note))
 
 
@@ -233,7 +233,7 @@ def table_calibration(cfg) -> None:
                                      placement="htbp", source="Cálculos de los autores", size="footnotesize"))
 
 
-PAPER_VARIANTS = ["lenza_primiceri", "pre2020", "usa", "tot", "joint_block"]   # Table 3 of the paper
+PAPER_VARIANTS = ["lenza_primiceri", "pre2020", "usa", "tot"]   # Table 3 of the paper
 
 
 def _robustness_table(cfg, variants, lp_thresholds, name: str, label: str, caption: str) -> None:
@@ -275,7 +275,7 @@ def _robustness_table(cfg, variants, lp_thresholds, name: str, label: str, capti
     header = (" & & \\multicolumn{2}{c}{Pesimismo} & \\multicolumn{2}{c}{Optimismo} & \\\\\n"
               "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\n"
               "Especificación & Choque & Mediana & Int. 68\\% & Mediana & Int. 68\\% & Pr \\\\\n")
-    note = ("Efecto traspaso al PBI a 12 meses, muestra 2002-2025 salvo donde se indica. China e IPX: choques de "
+    note = ("Efecto traspaso al crecimiento del PBI a 12 meses, muestra 2002-2025 salvo donde se indica. China e IPX: choques de "
             "+1 p.p. en la producción industrial de China y de +10 p.p. en el índice de precios de exportación; "
             "EE.UU.: +1 p.p. en la producción industrial de EE.UU.; TI: +10 p.p. en los términos de intercambio. "
             "Pr: probabilidad posterior de que el traspaso sea mayor en optimismo, calculada extracción por "
