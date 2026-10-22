@@ -166,3 +166,10 @@ conventional IRFs) `MacroPy` reproduces Table 1 of the previous version under op
 (for example 0.24 [0.15, 0.32] against 0.24 [0.15, 0.33] for China at 12 months and 0.62 against 0.65
 for the export price index). Under pessimism the medians differ more (0.18 against 0.10 for China),
 within bands almost one point wide.
+
+## Acknowledgements
+
+The code of this replication package and the organisation of the pipeline were written with the
+assistance of Claude (Anthropic), used as a programming assistant. The research question, the
+methodology, the empirical strategy, the interpretation of the results and the paper itself are the
+authors' own work.
