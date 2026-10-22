@@ -76,19 +76,23 @@ results file, PDFs and PNGs byte-identical, in about 8 minutes).
 | Table 4: model parameters and sensitivity | `tab_calibration.tex` | `tables.table_calibration` |
 | Figure 6: structural model against the TVAR | `fig_model` | `figures.fig_model` |
 | Table 5: capital goods imports by state | `tab_investment.tex` | `tables.table_investment` |
-| Footnote 1: rolling correlations (appendix, Figures S1 and S2) | `fig_facts_rolling`, `fig_facts_periods` | `figures.fig_stylized_facts` |
-| Appendix, Table S1: every alternative specification, including the joint system with block exogeneity | `tab_robustness_full.tex` | `tables.table_robustness` |
-| Appendix, Figure S3: other external variables | `fig_robustness` | `figures.fig_robustness` |
-| Appendix, Figure S4 and Table S2: pass-through by the level of confidence when the shock hits | `fig_pass_through_bands`, `tab_pass_through_bands.tex` | `figures.fig_pass_through_bands`, `tables.table_pass_through_bands` |
-| Appendix, Table S3: fiscal revenue (3-month sum, `g_rev3`) | `tab_fiscal.tex` | `tables.table_fiscal` |
-| Appendix, Figures S5 and S6: thresholds with the marginal likelihood; estimated threshold and delay | `fig_threshold_grid`, `fig_threshold_posterior` | `figures.fig_threshold_grid`, `figures.fig_threshold_posterior` |
-| Appendix, Table S4: marginal likelihood by prior | `tab_prior_grid.tex` | `tables.table_prior_grid` |
-| Appendix, Figures S7 and S8: responses of every variable | `fig_girf_all_chn`, `fig_girf_all_ipx` | `figures.fig_girf_all` |
-| Appendix, Figure S9: joint system with block exogeneity | `fig_joint_block` | `figures.fig_joint_block` |
-| Appendix, Figure S10: pandemic dummies | `fig_pandemic_dummies` | `figures.fig_pandemic_dummies` |
+| Appendix, Table S1: marginal likelihood by prior | `tab_prior_grid.tex` | `tables.table_prior_grid` |
+| Appendix, Figure S1: pandemic dummies | `fig_pandemic_dummies` | `figures.fig_pandemic_dummies` |
+| Appendix, Figures S2 and S3: thresholds with the marginal likelihood; estimated threshold and delay | `fig_threshold_grid`, `fig_threshold_posterior` | `figures.fig_threshold_grid`, `figures.fig_threshold_posterior` |
+| Appendix, Figures S4 and S5: responses of every variable | `fig_girf_all_chn`, `fig_girf_all_ipx` | `figures.fig_girf_all` |
+| Appendix, Figure S6 and Table S2: pass-through by the level of confidence when the shock hits | `fig_pass_through_bands`, `tab_pass_through_bands.tex` | `figures.fig_pass_through_bands`, `tables.table_pass_through_bands` |
+| Appendix, Table S3: every alternative specification, including the joint system with block exogeneity | `tab_robustness_full.tex` | `tables.table_robustness` |
+| Appendix, Figure S7: other external variables | `fig_robustness` | `figures.fig_robustness` |
+| Appendix, Figure S8: joint system with block exogeneity | `fig_joint_block` | `figures.fig_joint_block` |
+| Appendix, Table S4: fiscal revenue (3-month sum, `g_rev3`) | `tab_fiscal.tex` | `tables.table_fiscal` |
+| Appendix, Table S5: calibration sensitivity of the structural model | `structural_sensitivity.csv` | `structural.estimate` |
 
-The appendix (robustness and mechanism results that the paper cites as available on request) is
-built from the same `output/` folder. `tab_state.tex` (full sample against the sample up to 2019) is
+The appendix (methodological details and the robustness and mechanism results that the paper cites
+as available on request) is built from the same `output/` folder. Its methodological sections
+document the model, the dummy-observation prior, the exact posterior sampler, the generalized impulse
+responses, the local projections, the joint system and the calibration of the structural model, as
+implemented here and in `MacroPy`. `fig_facts_rolling` and `fig_facts_periods` (the correlations of
+footnote 1) are still produced but are no longer in the appendix. `tab_state.tex` (full sample against the sample up to 2019) is
 produced but no longer used: Table 3 carries those rows.
 
 Not in the package: the MS-VAR of the previous version, and the political noise index of the
