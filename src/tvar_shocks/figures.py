@@ -138,13 +138,24 @@ def fig_stylized_facts(cfg):
 
 
 def fig_variables(cfg):
+    """The six variables of the baseline models (Figure 2 of the paper); the shaded area is the
+    pandemic window taken out of the likelihood (the dummies plus the two months whose lags fall in it)."""
     db = dbase.load().loc[cfg["data"]["start"]:cfg["data"]["end"]]
     cols = ["g_ip_chn", "g_xpi", "g_gdp", "g_cpi", "int", "exp"]
+    units = {"int": "Porcentaje", "exp": "Puntos"}
+    w = cfg["covid"]["window"]
+    start = pd.Timestamp(f"{w[0]}-01")
+    end = pd.Timestamp(f"{w[1]}-01") + pd.DateOffset(months=2 if cfg["covid"].get("drop_lags", True) else 0)
+    end = end + pd.offsets.MonthEnd(0)
     with plt.rc_context(STYLE):
         fig, axes = plt.subplots(3, 2, figsize=(6.5, 6.2), sharex=True)
-        for ax, c in zip(axes.ravel(), cols):
+        for ax, c, letter in zip(axes.ravel(), cols, "abcdef"):
+            ax.axvspan(start, end, color="0.88", lw=0, zorder=0)
             ax.plot(db.index, db[c], color="0", lw=0.9)
-            ax.set_title(LABELS[c])
+            if c == "exp":
+                ax.axhline(cfg["estimation"]["threshold"], color="0", lw=0.8, ls=":")
+            ax.set_title(f"({letter}) {LABELS[c]}")
+            ax.set_ylabel(units.get(c, "Var. % interanual"))
             _years(ax, 4)
         fig.tight_layout()
         return _save(fig, "fig_variables")

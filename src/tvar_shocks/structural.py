@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import least_squares
 
-__all__ = ["level_from_yoy", "yoy", "Structural", "calibrate", "estimate"]
+__all__ = ["level_from_yoy", "yoy", "Structural", "external_paths", "calibrate", "summary", "estimate"]
 
 MODEL_FILE = Path(__file__).with_name("soe.model")
 SHOCKS = {"chn": ("yf", 1.0), "ipx": ("p", 10.0)}
@@ -110,7 +110,10 @@ def calibrate(model: Structural, paths: dict, fixed: dict, targets: dict, H: int
     return dict(zip(("eta", "a_p", "phi_pes"), sol.x)), float(np.abs(sol.fun).max())
 
 
-def _summary(model, paths, fixed, cal, horizons) -> tuple[pd.DataFrame, dict]:
+def summary(model, paths, fixed, cal, horizons) -> tuple[pd.DataFrame, dict]:
+    """Pass-through of GDP, investment, consumption and revenue by shock and regime, and the response
+    paths (12-month changes, scaled to the shock) of the calibrated model and of the counterfactual
+    with the optimism sensitivity of investment under pessimism (``misma_respuesta``)."""
     rows, irfs = [], {}
     for shock, (ext, scale) in SHOCKS.items():
         for regime in REGIMES:
@@ -136,7 +139,7 @@ def estimate(cfg: dict, results: Path) -> None:
     paths = external_paths(results)
     model = Structural()
     cal, err = calibrate(model, paths, s["fixed"], targets)
-    table, irfs = _summary(model, paths, s["fixed"], cal, cfg["girf"]["pass_through"][:2])
+    table, irfs = summary(model, paths, s["fixed"], cal, cfg["girf"]["pass_through"][:2])
     table.to_csv(results / "structural_pass_through.csv", index=False)
     pd.DataFrame([{**s["fixed"], **cal, "max_moment_error": err}]).to_csv(results / "structural_calibration.csv",
                                                                          index=False)

@@ -71,12 +71,12 @@ def table_pass_through(cfg) -> None:
         rows += ("$\\Pr(\\text{optimismo} > \\text{pesimismo})$ & "
                  + " & ".join(f"\\multicolumn{{2}}{{c}}{{{a.loc[h, 'prob_optimism_larger']:.2f}}}" for h in H)
                  + " \\\\\n\\addlinespace\n")
-    note = ("Efecto traspaso: respuesta acumulada del crecimiento del PBI dividida por la respuesta acumulada "
-            "de la variable externa, escalada al tamaño del choque, calculada extracción por extracción a "
-            "partir de funciones impulso-respuesta generalizadas que promedian sobre las historias de cada "
-            "régimen y permiten que el régimen cambie a lo largo del horizonte. Mediana y percentiles 16 y 84 "
-            "de la distribución posterior. La última fila de cada panel es la proporción de extracciones en "
-            "que el traspaso en optimismo supera al de pesimismo.")
+    note = ("El efecto traspaso es el cociente entre las respuestas acumuladas del crecimiento del PBI y de la "
+            "variable externa, escalado al tamaño del choque y calculado para cada extracción posterior a partir "
+            "de las GIRF, en la muestra 2002-2025. Cada celda presenta la mediana y, entre corchetes, los "
+            "percentiles 16 y 84. La última fila de cada panel indica la proporción de extracciones en que el "
+            "traspaso en optimismo supera al de pesimismo. Los estados se definen por $c_{t-d} \\leq 50$ para "
+            "pesimismo y $c_{t-d} > 50$ para optimismo.")
     _write("tab_pass_through", _table("Efecto traspaso de los choques externos al crecimiento del PBI", "tab:pass_through",
                                       "l" + "cc" * len(H), _horizon_header(H), rows, note))
 
@@ -176,11 +176,11 @@ def table_investment(cfg) -> None:
             rows += (f"{names[2]} & "
                      + " & ".join(f"\\multicolumn{{2}}{{c}}{{{p:.2f}}}" for p in probs) + " \\\\\n")
         rows += "\\addlinespace\n"
-    note = ("Respuesta acumulada del crecimiento interanual del volumen de importación de bienes de capital "
-            "(sin materiales de construcción, BCRP) dividida por la respuesta acumulada de la variable externa, "
-            "escalada al tamaño del choque, en el modelo base ampliado con esa serie ordenada después del PBI. "
-            "La serie empieza en 2007, de modo que la muestra empieza en 2008. Mediana y percentiles 16 y 84; la "
-            "probabilidad se calcula extracción por extracción.")
+    note = ("Cociente entre las respuestas acumuladas del crecimiento interanual del volumen de importación de "
+            "bienes de capital y de la variable externa, escalado al tamaño del choque. El modelo incorpora las "
+            "importaciones de capital sin materiales de construcción, ordenadas después del PBI. La disponibilidad "
+            "de la serie desde 2007 determina el inicio de la muestra en 2008. Se reportan medianas y percentiles "
+            "16 y 84, y la probabilidad se calcula para cada extracción posterior.")
     _write("tab_investment", _table("Respuesta de la importación de bienes de capital según el estado",
                                     "tab:investment", "l" + "cc" * len(H), _horizon_header(H), rows, note))
 
@@ -215,22 +215,18 @@ def table_calibration(cfg) -> None:
                            ("phi_pes", "$\\phi_{\\text{pes}}$",
                             "Sensibilidad relativa de la inversión en pesimismo ($\\phi = 1$ en optimismo)")):
         rows += f"{sym} & {cal[key]:.2f} & {text} \\\\\n"
-    rng = lambda c: f"{sens[c].min():.2f} a {sens[c].max():.2f}"
-    note = (f"Modelo de la Sección~\\ref{{sec:mecanismo}}, en frecuencia mensual. Las participaciones son las "
-            "de las cuentas nacionales del BCRP multiplicadas por el contenido doméstico de cada componente; "
-            "los parámetros de dinámica y de respuesta son supuestos del ejercicio dentro de rangos usuales en "
-            "la literatura, sin una fuente específica. Los tres parámetros calibrados reproducen el traspaso a "
-            "12 meses de la demanda externa en optimismo y de los precios de exportación en ambos regímenes. "
-            "Sensibilidad: con $a_y \\in \\{"
+    rng = lambda c: f"{sens[c].min():.2f} y {sens[c].max():.2f}"
+    note = ("Frecuencia mensual. Las participaciones incorporan el contenido doméstico de cada componente. "
+            "Al variar $a_y \\in \\{"
             + ", ".join(f"{v:g}" for v in sorted(sens['a_y'].unique())) + "\\}$ y $m \\in \\{"
             + ", ".join(f"{v:g}" for v in sorted(sens['mpc'].unique())) + "\\}$, "
-            f"$\\phi_{{\\text{{pes}}}}$ va de {rng('phi_pes')}, el traspaso predicho de la demanda externa en "
-            f"pesimismo va de {rng('chn_pes_12')} (0.20 en el TVAR) y el traspaso de los precios en pesimismo "
-            f"con la sensibilidad de optimismo va de {rng('ipx_pes_12_same_phi')}.")
+            f"$\\phi_{{\\text{{pes}}}}$ toma valores entre {rng('phi_pes')}. El traspaso predicho de China en "
+            f"pesimismo varía entre {rng('chn_pes_12')}, frente a 0.20 en el TVAR. Para los precios, el traspaso en "
+            f"pesimismo con la sensibilidad de inversión del estado optimista varía entre {rng('ipx_pes_12_same_phi')}.")
     header = "Parámetro & Valor & Descripción \\\\\n"
     _write("tab_calibration", _table("Parámetros del modelo", "tab:calibration",
                                      "cc>{\\raggedright\\arraybackslash}p{11.5cm}", header, rows, note,
-                                     placement="htbp", source="Cálculos de los autores", size="footnotesize"))
+                                     placement="htbp", source="Cálculos de los autores con datos del BCRP", size="footnotesize"))
 
 
 PAPER_ORDER = ["base", "base_linear_irf", "lenza_primiceri", "lp", "usa", "tot", "pre2020"]        # Table 3 of the paper
@@ -267,18 +263,18 @@ def _robustness_table(cfg, order, name: str, label: str, caption: str) -> None:
         else:
             prob = _variant_asymmetry(cfg, variant, model, "g_gdp", H)
         rows += (f"{descr.get(variant, variant)} & {shock[model.split('_')[0]]} & "
-                 + " & ".join(_cell(c) for c in cells) + (" & " if prob is None else f" & {prob:.2f}") + " \\\\\n")
+                 + " & ".join(_cell(c) for c in cells) + (" & \\textendash" if prob is None else f" & {prob:.2f}") + " \\\\\n")
     header = (" & & \\multicolumn{2}{c}{Pesimismo} & \\multicolumn{2}{c}{Optimismo} & \\\\\n"
               "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\n"
               "Especificación & Choque & Mediana & Int. 68\\% & Mediana & Int. 68\\% & Pr \\\\\n")
-    note = ("Efecto traspaso al crecimiento del PBI a 12 meses, muestra 2002-2025 salvo donde se indica. China e IPX: "
-            "choques de +1 p.p. en la producción industrial de China y de +10 p.p. en el índice de precios de exportación; "
-            "EE.UU.: +1 p.p. en la producción industrial de EE.UU.; TI: +10 p.p. en los términos de intercambio. "
-            "Pr: probabilidad posterior de que el traspaso sea mayor en optimismo, calculada extracción por "
-            "extracción. Las proyecciones locales son el multiplicador acumulado de Ramey y Zubairy (2018) "
-            "estimado por mínimos cuadrados en dos etapas en cada estado, sin los meses de 2020-21, con bandas "
-            "de $\\pm 1$ error estándar de Newey-West, no comparables con los intervalos de credibilidad; el "
-            f"estado es la confianza {cfg['lp']['delay']} meses antes del choque.")
+    note = ("Efecto traspaso al crecimiento del PBI a 12 meses. Se presentan la mediana y los percentiles 16 y 84 "
+            "para el TVAR, en la muestra 2002-2025 salvo indicación distinta. Los choques son de +1 p.p. en el "
+            "crecimiento de la producción industrial de China o de Estados Unidos y de +10 p.p. en el del IPX o "
+            "los términos de intercambio. Pr indica la probabilidad posterior de un traspaso mayor en optimismo. "
+            "Las proyecciones locales se estiman por mínimos cuadrados en dos etapas en cada estado, excluyendo "
+            "los horizontes que atraviesan la pandemia, con bandas de $\\pm 1$ error estándar de Newey-West. "
+            "El guion indica que no se reporta una probabilidad posterior para este método. El estado depende de "
+            f"la confianza {cfg['lp']['delay']} meses antes del choque.")
     _write(name, _table(caption, label, ">{\\raggedright\\arraybackslash}p{5.2cm}lccccc", header, rows, note))
 
 
