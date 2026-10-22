@@ -20,7 +20,7 @@ src/tvar_shocks/        the package
   analysis.py           runs the estimations and stores the results in output/results
   figures.py, tables.py figures (PDF and PNG) and tables (LaTeX) from output/results
 tests/                  data, specification and estimation tests
-notebooks/              replication.ipynb: the main results (Figure 3, Table 2, the joint system) step by step
+notebooks/              replication.ipynb: Figures 1, 2, 3 and 6 and Table 2 of the paper, step by step
 output/                 results, figures and tables, written by the pipeline (not tracked; `make all` regenerates them)
 ```
 
@@ -54,8 +54,8 @@ make data       # rebuilds the database from the sources and compares it with th
 
 Single stages: `python -m tvar_shocks baseline | robustness | grid | threshold | lp | structural |
 figures | tables`. Figures and tables are drawn from `output/results` only, so changing a figure does
-not require re-estimating. `notebooks/replication.ipynb` walks through the main results (the two
-baseline models, Table 2, Figure 3 and the joint system with block exogeneity) in about a minute.
+not require re-estimating. `notebooks/replication.ipynb` walks through the main results (the data of Figures 1 and 2, the two
+baseline models with Table 2 and Figure 3, and the structural model of Figure 6) in about two minutes.
 
 The seeds are fixed in `config.toml`: a full run from scratch reproduces `output/results`, the figures
 and the tables exactly (checked on 2026-10-20 after a `make clean`: maximum difference zero in every
@@ -66,30 +66,34 @@ results file, PDFs and PNGs byte-identical, in about 8 minutes).
 | Paper | File | Function |
 |:-|:-|:-|
 | Figure 1: business confidence and the 50-point threshold | `fig_confidence` | `figures.fig_confidence` |
-| Figure 2: (a) rolling correlations, (b) averages by subperiod | `fig_facts_rolling`, `fig_facts_periods` | `figures.fig_stylized_facts` |
+| Figure 2: the variables of the baseline models | `fig_variables` | `figures.fig_variables` |
+| Table 1: series, transformations and sources | `data/sources.csv` | `data.build` |
 | Figure 3: GDP response by regime (GIRF) | `fig_girf_gdp` | `figures.fig_girf_gdp` |
 | Table 2: pass-through and posterior probability of the asymmetry | `tab_pass_through.tex` | `tables.table_pass_through` |
-| Figure 4 and Table A2: pass-through by the level of confidence when the shock hits | `fig_pass_through_bands`, `tab_pass_through_bands.tex` | `figures.fig_pass_through_bands`, `tables.table_pass_through_bands` |
-| Figure 5: conventional IRF, GIRF and local projections | `fig_methods` | `figures.fig_methods` |
-| Figure 6: alternative thresholds and marginal likelihood | `fig_threshold_grid` | `figures.fig_threshold_grid` |
-| Table 3: alternative specifications | `tab_robustness.tex` | `tables.table_robustness` |
-| Table 4: full sample and sample up to 2019 | `tab_state.tex` | `tables.table_state` |
-| Figure 7: joint system with block exogeneity | `fig_joint_block` | `figures.fig_joint_block` |
-| Figure 8: structural model against the TVAR | `fig_model` | `figures.fig_model` |
+| Figure 4: conventional IRF, GIRF, Lenza-Primiceri scales and local projections | `fig_methods` | `figures.fig_methods` |
+| Table 3: alternative specifications (12 rows) | `tab_robustness.tex` | `tables.table_robustness` |
+| Figure 5: pass-through by threshold | `fig_threshold_pt` | `figures.fig_threshold_grid` |
+| Table 4: model parameters and sensitivity | `tab_calibration.tex` | `tables.table_calibration` |
+| Figure 6: structural model against the TVAR | `fig_model` | `figures.fig_model` |
 | Table 5: capital goods imports by state | `tab_investment.tex` | `tables.table_investment` |
-| Table 6: fiscal revenue | `tab_fiscal.tex` | `tables.table_fiscal` |
-| Figure A1: model variables | `fig_variables` | `figures.fig_variables` |
-| Table A1: marginal likelihood by prior | `tab_prior_grid.tex` | `tables.table_prior_grid` |
-| Figure A2: estimated threshold and delay | `fig_threshold_posterior` | `figures.fig_threshold_posterior` |
-| Figures A3 and A4: responses of every variable | `fig_girf_all_chn`, `fig_girf_all_ipx` | `figures.fig_girf_all` |
-| Figure A5: other external variables | `fig_robustness` | `figures.fig_robustness` |
-| Figure A6: pandemic dummies | `fig_pandemic_dummies` | `figures.fig_pandemic_dummies` |
-| Table A3: model parameters and sensitivity | `tab_calibration.tex` | `tables.table_calibration` |
+| Footnote 1: rolling correlations (appendix, Figures S1 and S2) | `fig_facts_rolling`, `fig_facts_periods` | `figures.fig_stylized_facts` |
+| Appendix, Table S1: every alternative specification, including the joint system with block exogeneity | `tab_robustness_full.tex` | `tables.table_robustness` |
+| Appendix, Figure S3: other external variables | `fig_robustness` | `figures.fig_robustness` |
+| Appendix, Figure S4 and Table S2: pass-through by the level of confidence when the shock hits | `fig_pass_through_bands`, `tab_pass_through_bands.tex` | `figures.fig_pass_through_bands`, `tables.table_pass_through_bands` |
+| Appendix, Table S3: fiscal revenue (3-month sum, `g_rev3`) | `tab_fiscal.tex` | `tables.table_fiscal` |
+| Appendix, Figures S5 and S6: thresholds with the marginal likelihood; estimated threshold and delay | `fig_threshold_grid`, `fig_threshold_posterior` | `figures.fig_threshold_grid`, `figures.fig_threshold_posterior` |
+| Appendix, Table S4: marginal likelihood by prior | `tab_prior_grid.tex` | `tables.table_prior_grid` |
+| Appendix, Figures S7 and S8: responses of every variable | `fig_girf_all_chn`, `fig_girf_all_ipx` | `figures.fig_girf_all` |
+| Appendix, Figure S9: joint system with block exogeneity | `fig_joint_block` | `figures.fig_joint_block` |
+| Appendix, Figure S10: pandemic dummies | `fig_pandemic_dummies` | `figures.fig_pandemic_dummies` |
 
-Not in the package: the MS-VAR of the previous version, and the political noise index of Section 6.4
-of the paper, which is not distributed (see `data/README.md`); the results that use it are reported in
-the paper's text only, and the `pni*` variants of `config.toml` are skipped unless the index file is
-present.
+The appendix (robustness and mechanism results that the paper cites as available on request) is
+built from the same `output/` folder. `tab_state.tex` (full sample against the sample up to 2019) is
+produced but no longer used: Table 3 carries those rows.
+
+Not in the package: the MS-VAR of the previous version, and the political noise index of the
+previous version, which is not distributed (see `data/README.md`); the `pni*` variants of
+`config.toml` are skipped unless the index file is present, and the paper no longer uses them.
 
 ## The method, briefly
 
